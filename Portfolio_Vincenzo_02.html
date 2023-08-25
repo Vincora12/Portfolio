@@ -1,0 +1,329 @@
+
+
+<html>
+  <head>
+    
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <style>
+          body {
+    margin: 0;
+    padding: 0;
+  }
+      #container {
+        width: 100%;
+        height: 100%;
+
+      }
+    </style>
+	  
+<script>
+
+import * as THREE from 'https://cdn.skypack.dev/three@0.124.0';
+import { RGBELoader  } from 'https://cdn.skypack.dev/three@0.124.0/examples/jsm/loaders/RGBELoader.js';
+import { EffectComposer } from 'https://cdn.skypack.dev/three@0.124.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.skypack.dev/three@0.124.0/examples/jsm/postprocessing/RenderPass.js';
+import { AfterimagePass } from 'https://cdn.skypack.dev/three@0.124.0/examples/jsm/postprocessing/AfterimagePass.js';
+import { UnrealBloomPass } from 'https://cdn.skypack.dev/three@0.124.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'https://cdn.skypack.dev/three@0.124.0/examples/jsm/postprocessing/ShaderPass.js';
+import { PixelShader } from 'https://cdn.skypack.dev/three@0.124.0/examples/jsm/shaders/PixelShader.js';
+import { FBXLoader } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/loaders/FBXLoader.js';
+
+var THREE = THREE || {};
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight, 0.1, 10000 );
+var renderer = new THREE.WebGLRenderer();
+document.getElementById("container").appendChild(renderer.domElement);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.domElement.addEventListener("mousemove", onMouseOver, false);
+renderer.domElement.addEventListener("click", onClick, false);
+renderer.alpha = true;
+window.addEventListener("resize", onWindowResize, false);
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+var light = new THREE.AmbientLight( 0xFFFFFF )
+
+// default bg canvas color //
+renderer.setClearColor(0x11151c);
+
+// Carica le immagini
+var texture2 = new THREE.TextureLoader().load("https://cdn-icons-png.flaticon.com/512/3621/3621464.png");
+var texture3 = new THREE.TextureLoader().load("https://static.thenounproject.com/png/496877-200.png");
+var texture4 = new THREE.TextureLoader().load("https://m.media-amazon.com/images/I/81GhJuX-uRL.png");
+var texture5 = new THREE.TextureLoader().load("https://m.media-amazon.com/images/I/81GhJuX-uRL.png");
+var texture6 = new THREE.TextureLoader().load("https://m.media-amazon.com/images/I/81GhJuX-uRL.png");
+
+
+// Crea le geometrie e i materiali per le immagini
+var geometry2 = new THREE.PlaneGeometry(0.2, 0.2);
+var material2 = new THREE.MeshBasicMaterial({map: texture2,  transparent: true});
+var geometry3 = new THREE.PlaneGeometry(0.3, 0.3);
+var material3 = new THREE.MeshBasicMaterial({map: texture3,  transparent: true});
+var geometry4 = new THREE.PlaneGeometry(2, 2);
+var material4 = new THREE.MeshBasicMaterial({map: texture4});
+var geometry5 = new THREE.PlaneGeometry(2, 2);
+var material5 = new THREE.MeshBasicMaterial({map: texture5});
+var geometry6 = new THREE.PlaneGeometry(2, 2);
+var material6 = new THREE.MeshBasicMaterial({map: texture6});
+
+var buttongeometry = new THREE.PlaneGeometry(0.5, 0.2);
+var buttonmaterial = new THREE.MeshStandardMaterial({color:0xFFFF00});
+
+var elemgeometry1 = new THREE.DodecahedronGeometry(4, 0);
+var elemmaterial1 = new THREE.MeshStandardMaterial({color:0xFFFF00, wireframe:true});
+
+var tourusgeometry1 = new THREE.TorusGeometry(10, 3, 16, 100);
+var tourusmaterial1 = new THREE.MeshStandardMaterial({color:0xFFFF00, wireframe:true});
+
+// nebulosa stelle
+starGeo = new THREE.Geometry();
+for(let i=0;i<90000;i++) {
+    let star = new THREE.Vector3(
+    Math.random() * 600 - 200,
+    Math.random() * 600 - 200,
+    Math.random() * 600 - 200
+  );
+  starGeo.vertices.push(star);
+}
+
+let sprite = new THREE.TextureLoader().load( 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Circle_-_black_simple.svg/800px-Circle_-_black_simple.svg.png' );
+let starMaterial = new THREE.PointsMaterial({
+  color: 0xaaaaaa,
+  size: 0.3,
+  map: sprite
+});
+
+//outline area grandezza finestra
+var shaderMaterial2 = new THREE.MeshStandardMaterial({color:0xFFFFFF, wireframe:true});
+var geometrybackground2 = new THREE.PlaneGeometry(window.innerWidth/350, window.innerHeight/350);
+
+
+// mesh
+
+var mesh1 = new THREE.Mesh(geometry3,material3);
+var mesh2 = new THREE.Mesh(geometry2,shaderMaterial2);
+var mesh3 = new THREE.Mesh(geometry2,material2);
+var mesh4 = new THREE.Mesh(geometry2,material2);
+var mesh5 = new THREE.Mesh(geometry2,material2);
+var mesh6 = new THREE.Mesh(geometry6, material6);
+      mesh6.position.x = -2;
+      mesh6.position.y = 1;
+      mesh6.position.z = 7;
+var Wireframe = new THREE.GridHelper( 1000, 1000 );	
+      Wireframe.rotation.z = -Math.PI / 1;
+      Wireframe.position.x = 0;
+      Wireframe.position.y = -3.2;
+      Wireframe.position.z = 5;
+var button = new THREE.Mesh(buttongeometry,buttonmaterial);
+      button.position.x = 0;
+      button.position.y = -0.2;
+      button.position.z = 29;
+var elem1 = new THREE.Mesh(elemgeometry1,elemmaterial1);
+      elem1.position.x = -10;
+      elem1.position.y = 10;
+      elem1.position.z = 10;
+var elem2 = new THREE.Mesh(elemgeometry1,elemmaterial1);
+      elem2.position.x = 10;
+      elem2.position.y = -10;
+      elem2.position.z = 10;
+var torus1 = new THREE.Mesh(tourusgeometry1,tourusmaterial1);
+      torus1.position.x = 0;
+      torus1.position.y = 0;
+      torus1.position.z = 10;
+      // Apertura Container BackgroundPlane2
+
+var backgroundPlane2 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane2.position.x = 0;
+backgroundPlane2.position.y = 0;
+backgroundPlane2.position.z = -1.5;
+
+var backgroundPlane3 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane3.position.z = -1.4;
+
+var backgroundPlane4 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane4.position.z = -1.3;
+
+var backgroundPlane5 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane5.position.z = -1.2;
+
+var backgroundPlane6 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane6.position.z = -1.1;
+
+var backgroundPlane7 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane7.position.z = -1;
+
+var backgroundPlane8 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane8.position.z = -0.8;
+
+var backgroundPlane9 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane9.position.z = -0.4;
+
+var backgroundPlane10 = new THREE.Mesh(geometrybackground2,shaderMaterial2);
+backgroundPlane10.position.z = -0;
+
+var stars = new THREE.Points(starGeo,starMaterial);
+
+mesh2.position.x = backgroundPlane2.geometry.parameters.width / -3;
+mesh2.position.y = backgroundPlane2.geometry.parameters.height / 3;
+mesh3.position.x = backgroundPlane2.geometry.parameters.width / 3;
+mesh3.position.y = backgroundPlane2.geometry.parameters.height / -3;
+mesh4.position.x = mesh3.position.x - 0.3;
+mesh4.position.y = mesh3.position.y;
+mesh5.position.x = mesh4.position.x - 0.3;
+mesh5.position.y = mesh4.position.y;
+
+
+var objectLoader = new THREE.ObjectLoader();
+objectLoader.load("Testo.json", function(loadedObject) {
+loadedObject.scale.x = -0.01;
+loadedObject.scale.y = 0.01;
+loadedObject.scale.z = 0.01;
+backgroundPlane2.add(loadedObject);
+
+
+loadedObject.position.x = mesh2.position.x - 0.1;
+loadedObject.position.y = mesh2.position.y + 0.1;
+	
+	if (backgroundPlane2.geometry.parameters.width > 2.3) {
+loadedObject.scale.x = backgroundPlane2.geometry.parameters.width / -400;
+loadedObject.scale.y = backgroundPlane2.geometry.parameters.width / 400;
+}	else {loadedObject.scale.x = backgroundPlane2.geometry.parameters.width / -250;
+loadedObject.scale.y = backgroundPlane2.geometry.parameters.width / 250;}
+
+	
+});
+backgroundPlane2.add( mesh1 );
+backgroundPlane2.add( mesh2 );
+backgroundPlane2.add( mesh3 );
+backgroundPlane2.add( mesh4 );
+backgroundPlane2.add( mesh5 );
+
+
+
+// Aggiungi i mesh alla scena
+scene.add(mesh6);
+scene.add(Wireframe);
+//scene.add(backgroundPlane);
+scene.add(backgroundPlane2);
+scene.add(backgroundPlane3);
+scene.add(backgroundPlane4);
+scene.add(backgroundPlane5);
+scene.add(backgroundPlane6);
+scene.add(backgroundPlane7);
+scene.add(backgroundPlane8);
+scene.add(backgroundPlane9);
+scene.add(backgroundPlane10);
+scene.add(light);
+scene.add(button);
+scene.add(elem1);
+scene.add(elem2);
+scene.add(torus1);
+scene.add(stars);
+camera.position.z = 0;
+
+		
+function animate () {
+	requestAnimationFrame( animate );
+	torus1.rotation.z += 0.01;
+	elem1.rotation.z += 0.01;
+	elem2.rotation.z += 0.01;
+	renderer.render(scene, camera);
+}
+
+
+function onMouseOver() {
+mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+raycaster.setFromCamera(mouse, camera);
+var intersects = raycaster.intersectObjects([button]);
+var intersects2 = raycaster.intersectObjects([mesh3]);
+var intersects3 = raycaster.intersectObjects([mesh4]);
+var intersects4 = raycaster.intersectObjects([mesh5]);
+	
+if (intersects.length > 0) {
+    button.material.color.set(0x00ff00);button.scale.x = 1.1;
+    button.scale.y = 1.1;
+  } else {
+    button.material.color.set(0xFFFF00);button.scale.x = 1;
+    button.scale.y = 1; }
+if (intersects2.length > 0) {mesh3.scale.y = 1.1;mesh3.scale.x = 1.1;
+  } else { mesh3.scale.y = 1;mesh3.scale.x = 1;}
+if (intersects3.length > 0) {mesh4.scale.y = 1.1;mesh4.scale.x = 1.1;
+  } else { mesh4.scale.y = 1;mesh4.scale.x = 1;}
+if (intersects4.length > 0) {mesh5.scale.y = 1.1;mesh5.scale.x = 1.1;
+  } else { mesh5.scale.y = 1;mesh5.scale.x = 1;}
+	
+	
+}
+
+
+function onClick() {
+  var intersects = raycaster.intersectObjects([button]);
+  var intersects2 = raycaster.intersectObjects([mesh1]);
+
+if (intersects.length > 0) {
+    window.open("https://www.google.it/", "_blank");
+  }
+if (intersects2.length > 0) {
+    window.open("https://www.google.it/", "_blank");
+  }
+}
+
+
+function onWindowResize() {
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+	
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+
+// Gestisci gli eventi del mouse
+
+
+animate()
+
+	
+      var mouseWheelHandler = function (event) {
+      var delta = 0;
+      if (event.wheelDelta) {
+    delta = event.wheelDelta / 120;
+  } else if (event.detail) {
+    delta = -event.detail / 3;
+  }
+
+
+  camera.position.z -= delta;
+  
+  // Imposta i limiti per la posizione della telecamera
+  if (camera.position.z > 30) {
+    camera.position.z = 30;
+  } else if (camera.position.z < 0) {
+    camera.position.z = 0;
+  }
+};
+
+document.getElementById("container").addEventListener("mousewheel", mouseWheelHandler, false);
+ 
+
+// loop Gradiente
+var animate = function () {
+  requestAnimationFrame(animate);
+gattiniMaterial.uniforms.time.value += 0.01;};
+
+  var render = function () {
+    requestAnimationFrame(render);
+    renderer.render(scene, camera);
+  };
+		
+document.addEventListener('wheel', function (event) {
+  event.preventDefault();
+}, { passive: false });
+	
+render(); // JavaScript Document
+</script>
+</body>
+</html>
